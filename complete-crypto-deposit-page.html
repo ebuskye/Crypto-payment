@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Deposit</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cryptocurrency-icons/0.18.1/css/crypto-icons.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.363.0/dist/umd/lucide.min.js"></script>
+    <style>
+        .site-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .site-card-header {
+            margin-bottom: 20px;
+        }
+        .site-card-body {
+            margin-bottom: 20px;
+        }
+        .site-custom-table {
+            width: 100%;
+        }
+        .site-table-list {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .site-table-col {
+            flex: 1;
+        }
+        .crypto-icon {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-xl-12 col-lg-12 col-md-12 col-12">
+                <div class="site-card">
+                    <div class="site-card-header">
+                        <h2>Deposit Money</h2>
+                    </div>
+                    <form id="depositForm">
+                        <div class="site-card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="CryptoId" class="form-label">Select Crypto Payment Mode</label>
+                                    <select id="CryptoId" class="form-select" required>
+                                        <option value="" selected disabled>Select Crypto Payment Mode</option>
+                                    </select>
+                                    <div class="processing-time mt-2 text-muted"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="amount" class="form-label">Enter Amount</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control withdrawAmount" id="amount" name="amount" required>
+                                        <span class="input-group-text">USD</span>
+                                    </div>
+                                    <div class="withdrawAmountRange mt-2 text-muted"></div>
+                                </div>
+                            </div>
+                            <div class="site-card">
+                                <div class="site-card-header">
+                                    <h5>Preview:</h5>
+                                </div>
+                                <div class="site-card-body">
+                                    <div class="site-custom-table">
+                                        <div class="contents">
+                                            <div class="site-table-list">
+                                                <div class="site-table-col">Amount:</div>
+                                                <div class="site-table-col withdrawAmount"></div>
+                                            </div>
+                                            <div class="site-table-list">
+                                                <div class="site-table-col">Charge:</div>
+                                                <div class="site-table-col withdrawFee"></div>
+                                            </div>
+                                            <div class="site-table-list">
+                                                <div class="site-table-col">Payment Method:</div>
+                                                <div class="site-table-col method"></div>
+                                            </div>
+                                            <div class="site-table-list">
+                                                <div class="site-table-col">Payment Method Logo:</div>
+                                                <div class="site-table-col" id="logo"></div>
+                                            </div>
+                                            <div class="site-table-list">
+                                                <div class="site-table-col">Conversion Rate:</div>
+                                                <div class="site-table-col conversion-rate"></div>
+                                            </div>
+                                            <div class="site-table-list">
+                                                <div class="site-table-col">Total:</div>
+                                                <div class="site-table-col pay-amount"></div>
+                                            </div>
+                                            <div class="site-table-list">
+                                                <div class="site-table-col">Wallet Address:</div>
+                                                <div class="site-table-col wallet-address"></div>
+                                            </div>
+                                            <div class="site-table-list">
+                                                <div class="site-table-col">QR Code:</div>
+                                                <div class="site-table-col">
+                                                    <div id="qrcode" class="d-flex justify-content-center my-3"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-3">
+                                <i data-lucide="download"></i> Deposit Money
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add wallet addresses for each cryptocurrency
+        const cryptoCurrencies = [
+            {
+                id: 1,
+                name: "Bitcoin (BTC)",
+                symbol: "BTC",
+                min_amount: 50,
+                max_amount: 100000,
+                processing_time: "10-30 minutes",
+                charge_type: "percentage",
+                charge: 2.5,
+                icon: "btc",
+                wallet_address: "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+            },
+            {
+                id: 2,
+                name: "Ethereum (ETH)",
+                symbol: "ETH",
+                min_amount: 50,
+                max_amount: 50000,
+                processing_time: "5-15 minutes",
+                charge_type: "percentage",
+                charge: 2.0,
+                icon: "eth",
+                wallet_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+            },
+            {
+                id: 3,
+                name: "USDT (TRC20)",
+                symbol: "USDT",
+                min_amount: 10,
+                max_amount: 1000000,
+                processing_time: "1-5 minutes",
+                charge_type: "fixed",
+                charge: 1,
+                icon: "usdt",
+                wallet_address: "TNBAoYG4PVUXkPWXfCD9iTkoxNGNe5vnwm"
+            }
+        ];
+
+        // Initialize live rates object
+        let liveRates = {};
+
+        // Function to fetch live crypto rates
+        async function fetchCryptoRates() {
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,tether&vs_currencies=usd');
+                const data = await response.json();
+                
+                liveRates = {
+                    BTC: data.bitcoin.usd,
+                    ETH: data.ethereum.usd,
+                    USDT: data.tether.usd
+                };
+                
+                // Update UI if amount is already entered
+                const amount = parseFloat($('#amount').val()) || 0;
+                const selectedCryptoId = $('#CryptoId').val();
+                if (selectedCryptoId) {
+                    const selectedCrypto = cryptoCurrencies.find(c => c.id == selectedCryptoId);
+                    updateCalculations(amount, selectedCrypto);
+                }
+            } catch (error) {
+                console.error('Error fetching crypto rates:', error);
+                // Fallback to default rates if API fails
+                liveRates = {
+                    BTC: 41250.00,
+                    ETH: 2250.00,
+                    USDT: 1.00
+                };
+            }
+        }
+
+        // Function to generate QR code
+        function generateQRCode(data, element) {
+            $(element).empty(); // Clear existing QR code
+            
+            if (typeof QRCode === 'undefined') {
+                console.error('QRCode library not loaded');
+                $(element).text('QR Code library not available');
+                return;
+            }
+
+            try {
+                new QRCode(element, {
+                    text: data,
+                    width: 128,
+                    height: 128,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+                $(element).text('Failed to generate QR code');
+            }
+        }
+
+        // Function to update UI
+        function updateUI(crypto) {
+            $('.method').text(crypto.name);
+            $('#logo').html(`<i class="ci ci-${crypto.icon}" style="font-size: 24px;"></i>`);
+            $('.withdrawAmountRange').text(`Min: $${crypto.min_amount} - Max: $${crypto.max_amount}`);
+            $('.processing-time').text(`Processing Time: ${crypto.processing_time}`);
+            
+            // Update wallet address and QR code
+            $('.wallet-address').html(`
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-break">${crypto.wallet_address}</span>
+                    <button type="button" class="btn btn-sm btn-primary copy-address" data-address="${crypto.wallet_address}">
+                        <i data-lucide="copy"></i>
+                    </button>
+                </div>
+            `);
+            
+            // Generate QR code
+            generateQRCode(crypto.wallet_address, '#qrcode');
+            
+            // Initialize the copy button icon
+            if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+                lucide.createIcons();
+            }
+        }
+
+        // Function to update calculations
+        function updateCalculations(amount, crypto) {
+            const rate = liveRates[crypto.symbol];
+            let fee = crypto.charge_type === 'percentage' ? (amount * crypto.charge / 100) : crypto.charge;
+            let total = amount + fee;
+            let cryptoAmount = total / rate;
+
+            $('.withdrawAmount').text(`$${amount.toFixed(2)}`);
+            $('.withdrawFee').text(`$${fee.toFixed(2)}`);
+            $('.pay-amount').text(`$${total.toFixed(2)} / ${cryptoAmount.toFixed(8)} ${crypto.symbol}`);
+            $('.conversion-rate').text(`1 ${crypto.symbol} = $${rate.toFixed(2)}`);
+        }
+
+        // Initialize the system
+        $(document).ready(function() {
+            // Initial rates fetch
+            fetchCryptoRates();
+            
+            // Setup periodic rate updates (every 60 seconds)
+            setInterval(fetchCryptoRates, 60000);
+            
+            // Populate crypto selection dropdown
+            const cryptoSelect = $('#CryptoId');
+            cryptoSelect.empty();
+            cryptoSelect.append('<option value="" selected disabled>Select Crypto Payment Mode</option>');
+            
+            cryptoCurrencies.forEach(crypto => {
+                cryptoSelect.append(`<option value="${crypto.id}">${crypto.name}</option>`);
+            });
+
+            // Handle crypto selection change
+            $('#CryptoId').on('change', function() {
+                const selectedCryptoId = $(this).val();
+                const selectedCrypto = cryptoCurrencies.find(c => c.id == selectedCryptoId);
+                
+                if (selectedCrypto) {
+                    updateUI(selectedCrypto);
+                    const amount = parseFloat($('#amount').val()) || 0;
+                    updateCalculations(amount, selectedCrypto);
+                }
+            });
+
+            // Handle amount input
+            $('#amount').on('input', function() {
+                const amount = parseFloat($(this).val()) || 0;
+                const selectedCryptoId = $('#CryptoId').val();
+                const selectedCrypto = cryptoCurrencies.find(c => c.id == selectedCryptoId);
+                
+                if (selectedCrypto) {
+                    updateCalculations(amount, selectedCrypto);
+                }
+            });
+
+            // Handle copy address button click
+            $(document).on('click', '.copy-address', function() {
+                const address = $(this).data('address');
+                navigator.clipboard.writeText(address).then(() => {
+                    alert('Wallet address copied to clipboard');
+                });
+            });
+
+            // Handle form submission
+            $('#depositForm').on('submit', function(e) {
+                e.preventDefault();
+                const amount = parseFloat($('#amount').val());
+                const selectedCryptoId = $('#CryptoId').val();
+                const selectedCrypto = cryptoCurrencies.find(c => c.id == selectedCryptoId);
+
+                if (!selectedCrypto) {
+                    alert('Please select a cryptocurrency.');
+                    return;
+                }
+
+                if (isNaN(amount) || amount < selectedCrypto.min_amount || amount > selectedCrypto.max_amount) {
+                    alert(`Please enter a valid amount between $${selectedCrypto.min_amount} and $${selectedCrypto.max_amount}.`);
+                    return;
+                }
+
+                // Here you would typically send the deposit request to your server
+                alert('Deposit request submitted successfully!');
+            });
+        });
+    </script>
+</body>
+</html>
